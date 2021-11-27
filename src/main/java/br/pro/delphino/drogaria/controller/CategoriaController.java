@@ -1,57 +1,61 @@
 package br.pro.delphino.drogaria.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.pro.delphino.drogaria.domain.Categoria;
-import br.pro.delphino.drogaria.repository.CategoriaRepository;
+import br.pro.delphino.drogaria.exception.RecursoNaoEncontradoException;
+import br.pro.delphino.drogaria.service.CategoriaService;
 
 @RestController
 @RequestMapping("categorias")
 public class CategoriaController {
 	@Autowired
-	private CategoriaRepository categoriaRepository;
+	private CategoriaService categoriaService;
 
 	// Boa prática: Para listar usa-se root
 	@GetMapping
 	public List<Categoria> listar() {
-		List<Categoria> categorias = categoriaRepository.findAll();
+		//List<Categoria> categorias = categoriaRepository.findAll();
+		List<Categoria> categorias = categoriaService.listar();
 		return categorias;
 	}
 
 	@GetMapping("/{codigo}")
-	public Categoria buscar(@PathVariable Short codigo) {
-		Optional<Categoria> resultado = categoriaRepository.findById(codigo);
-		Categoria categoria = resultado.get();
-		return categoria;
+	public Categoria buscarPorCodigo(@PathVariable Short codigo) {
+//		Optional<Categoria> resultado = categoriaRepository.findById(codigo);
+//		Categoria categoria = resultado.get();
+		try {
+			Categoria categoria = categoriaService.buscarPorCodigo(codigo);
+			return categoria;
+		} catch (RecursoNaoEncontradoException excecao) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria não encontrada", excecao);
+		}
 	}
-	
-	@PostMapping
-	public Categoria inserir(@RequestBody Categoria categoria) {
-		Categoria categoriaSalva = categoriaRepository.save(categoria);
-		return categoriaSalva;
-	}
-	
-	@DeleteMapping("/{codigo}")
-	public Optional<Categoria> excluir (@PathVariable Short codigo) {
-		Optional<Categoria> categoria = categoriaRepository.findById(codigo);
-		categoriaRepository.delete(categoria.get());
-		return categoria;
-	}
-	
-	@PutMapping
-	public Categoria editar(@RequestBody Categoria categoria) {
-		Categoria categoriaEditada = categoriaRepository.save(categoria);
-		return categoriaEditada;
-	}
+
+//	@PostMapping
+//	public Categoria inserir(@RequestBody Categoria categoria) {
+//		Categoria categoriaSalva = categoriaRepository.save(categoria);
+//		return categoriaSalva;
+//	}
+
+//	@DeleteMapping("/{codigo}")
+//	public Optional<Categoria> excluir (@PathVariable Short codigo) {
+//		Optional<Categoria> categoria = categoriaRepository.findById(codigo);
+//		categoriaRepository.delete(categoria.get());
+//		return categoria;
+//	}
+
+//	@PutMapping
+//	public Categoria editar(@RequestBody Categoria categoria) {
+//		Categoria categoriaEditada = categoriaRepository.save(categoria);
+//		return categoriaEditada;
+//	}
 }
